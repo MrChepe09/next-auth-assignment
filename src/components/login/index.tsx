@@ -30,7 +30,6 @@ export default function Login() {
       }, 1500)
     } finally {
       setIsLoading(false);
-      router.push('/admin')
     }
   }
 
