@@ -8,7 +8,8 @@ export async function POST(request: NextRequest) {
     const resp: any = await LoginUser(email, password);
     response = NextResponse.json({ //getting hold of our success response
       message: "Successfully logged in",
-      success: true
+      success: true,
+      type: resp?.type
     });
     response.cookies.set("token", resp?.token, { httpOnly: true }); //setting the cookie
   } catch {

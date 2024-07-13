@@ -5,10 +5,10 @@ export const LoginUser = (email: string, password: string) => {
         setTimeout(() => {
             if(email === 'admin@gmail.com' && password === 'password'){
             const jwtToken = jwt.sign({ email: email, type: 'admin' }, jwt_secret, { expiresIn: '20d' });
-            resolve({ token: jwtToken });
+            resolve({ token: jwtToken, type: 'admin' });
             } else if(email === 'user@gmail.com' && password === 'password'){
                 const jwtToken = jwt.sign({ email: email, type: 'user' }, jwt_secret, { expiresIn: '20d' });
-                resolve({ token: jwtToken });
+                resolve({ token: jwtToken, type: 'user' });
             } else {
                 reject('invalid username or password');
             }

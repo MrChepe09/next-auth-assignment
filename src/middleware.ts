@@ -1,32 +1,59 @@
-import type { NextRequest } from 'next/server'
-import {jwtVerify} from 'jose';
+import { NextResponse, type NextRequest } from 'next/server'
+import { jwtVerify } from 'jose';
+
+const jwt_secret = process.env.JWT_SECRET;
+const SECRET = new TextEncoder().encode(jwt_secret);
  
 export async function middleware(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
-  console.log('abc', token, request.nextUrl.pathname);
-  if(token){
-    try {
-      const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
-      const decoded = await jwtVerify(token, JWT_SECRET);
-    
-      const user_type = decoded.payload.type;
+  const token: string = request.cookies.get('token')?.value || "";
+  const { pathname } = request.nextUrl;
 
-      if(user_type === 'admin' && !(request.nextUrl.pathname === '/admin')){
-        return Response.redirect(new URL('/admin', request.url));
-      }
-      if(user_type === 'user' && !(request.nextUrl.pathname === '/user')){
-        return Response.redirect(new URL('/user', request.url));
-      }
-    } catch (err) {
-      if(!(request.nextUrl.pathname === '/')){
-        return Response.redirect(new URL('/', request.url));
-      }
-    }
-  } else {
-    if(!(request.nextUrl.pathname === '/')){
-      return Response.redirect(new URL('/', request.url));
-    }
+  if(pathname === '/' && token){
+    try {
+    const { payload } = await jwtVerify(token, SECRET);
+    const url = payload.type === 'admin' ? '/admin' : '/user';
+    const response = NextResponse.redirect(new URL(url, request.url));
+    response.headers.set('x-middleware-cache', 'no-cache');
+    return response;
+    } catch(err) {
+      const response = NextResponse.next();
+      response.headers.set('x-middleware-cache', 'no-cache');
+      return response;
+    } 
+  } 
+
+  if(pathname !== '/' && !token){
+    const response = NextResponse.redirect(new URL('/', request.url));
+    response.headers.set('x-middleware-cache', 'no-cache');
+    return response;
   }
+
+  if(pathname !== '/') {
+    try {
+      const { payload } = await jwtVerify(token, SECRET);
+      
+      if(pathname.startsWith('/admin') && payload.type !== 'admin'){
+        const response = NextResponse.redirect(new URL('/user', request.url));
+        response.headers.set('x-middleware-cache', 'no-cache');
+        return response;
+      }
+
+      if(pathname.startsWith('/user') && payload.type === 'admin'){
+        const response = NextResponse.redirect(new URL('/admin', request.url));
+        response.headers.set('x-middleware-cache', 'no-cache');
+        return response;
+      }
+      
+    } catch(err) {
+      const response = NextResponse.redirect(new URL('/', request.url));
+      response.headers.set('x-middleware-cache', 'no-cache');
+      return response;
+    } 
+  }
+
+  const response = NextResponse.next();
+  response.headers.set('x-middleware-cache', 'no-cache');
+  return response;
 }
 
 export const config = {
