@@ -21,8 +21,8 @@ export default function Login() {
     }
     return (
         <div className="h-[100vh] w-[100%] flex flex-col items-center justify-center">
-            <h1 className="text-[22px] font-[600]">Hello User</h1>
-            <button onClick={handleLogout} className="bg-[#23a3fb] py-1 px-8 mt-4 rounded-[0.3rem]">{isLoading ? <Spinner /> : "Logout"}</button>
+            <h1 className="text-[26px] font-[600]">Hello User</h1>
+            <button onClick={handleLogout} className="border-[#2ea3fb] border-[2px] border-solid bg-[#2ea3fb] text-[white] my-2 px-8 py-1 rounded-[0.3rem]">{isLoading ? <Spinner /> : "Logout"}</button>
         </div>
     );
 }
